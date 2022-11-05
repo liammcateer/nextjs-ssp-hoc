@@ -1,10 +1,20 @@
+import {
+  Hydrate,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
 import type { AppProps } from "next/app";
 import { useRouter } from "next/router";
-import { setupAxiosDefaults } from "../util/setUpAxiosDefaults";
+import { useState } from "react";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const { locale } = useRouter();
-  setupAxiosDefaults({ locale });
+  const [queryClient] = useState(new QueryClient());
 
-  return <Component {...pageProps} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Hydrate state={pageProps.dehydratedState}>
+        <Component {...pageProps} />
+      </Hydrate>
+    </QueryClientProvider>
+  );
 }

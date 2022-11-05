@@ -1,18 +1,24 @@
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { fetchData } from "../fetchData";
-import { withAxiosSSP } from "../util/withAxiosSSP";
+import { dehydrate } from "@tanstack/react-query";
+import { GetServerSideProps } from "next";
+import { useUsers } from "../data-access/useUsers";
+import { getGetUsersQueryKey, getUsers } from "../generated/src/users";
+import { getSSPQueryContext } from "../util/getSSPQueryContext";
 
-export const getServerSideProps = withAxiosSSP(async ({ query }) => {
-  const data = await fetchData(query.q as string, "server");
-  return { props: { data } };
-});
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const {
+    query: { userId },
+  } = context;
+
+  const { queryClient, axiosConfig } = getSSPQueryContext(context);
+  const params = { userId: parseInt(userId as string) };
+
+  queryClient.prefetchQuery(getGetUsersQueryKey(params), () =>
+    getUsers(params, axiosConfig)
+  );
+  return { props: { dehydratedState: dehydrate(queryClient) } };
+};
 
 export default function Home() {
-  const { query } = useRouter();
-  useEffect(() => {
-    fetchData(query.q as string, "client");
-  }, [query]);
-
+  useUsers({ userId: 1 });
   return <h1>Hello world</h1>;
 }

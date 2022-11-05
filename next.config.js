@@ -6,6 +6,14 @@ const nextConfig = {
     locales: ["en-GB", "de"],
     defaultLocale: "en-GB",
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://jsonplaceholder.typicode.com/:path*",
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
